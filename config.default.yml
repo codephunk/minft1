@@ -1,30 +1,30 @@
 meta:
-  collection_name: Your NFT collection name
-  collection_description: A description of your NFT collection.
-  website:
-  banner_url:
-  icon_url:
-  twitter:
+  collection_name: The collection name
+  collection_description: A short description of the collection
+  website: https://...
+  banner_url: https://...
+  icon_url: https://...
+  twitter: @...
 
 wallet:
-  receive_address:
-  royalties_address:
-  did:
+  receive_address: xch...
+  royalties_address: xch...
+  did: did:chia:...
   nft_wallet_id:
   price_xch: 1000000000000
   royalties_percent: 5000
   minting_fees: 100000
 
-paths:
+path:
   images: assets/images/
   metadata: assets/metadata/
 
-keys:
+key:
   nft_storage_api:
 
-postgres:
+db:
+  db_name:
   host: localhost
   port: 5432
   user:
   password:
-  database:
