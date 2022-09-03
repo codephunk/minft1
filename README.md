@@ -1,16 +1,16 @@
-This is the minting tool used for generating the Marmot World Order (MWO) NFT collection using [DALL-E](https://openai.com/blog/dall-e/).
+# MINFT1
+###### A minting toolkit for the Chia Blockchain.
 
 ## Setup Instructions
 
-### Place these files in the `chia/wallet/` directory
+### Place the directory `minft1/` in the `chia/wallet/` directory
 ### Install additional dependencies 
 ```
-pip install openai
 pip install git+https://github.com/nftstorage/python-client.git
 pip install gino
 ```
 
-### You will need PostgreSQL databse
+### You will need a PostgreSQL databse
 You can run this [PostgreSQL](https://www.postgresql.org/download/) db locally.
 
 ### Set ENV variable so that marmot_db_api.py can connect to the database
@@ -55,7 +55,7 @@ You will have to create an Open AI account, get access to DALL-E, and get author
 
 ### Run the minter
 ```python
-python chia/wallet/marmot_server.py
+python chia/wallet/minft1/server.py
 ```
 
 ---

@@ -2,6 +2,9 @@
 # outside of that area and only update that section using the original site
 # that generated it.  Links provided below.
 
+# Assets
+/assets/images/
+/assets/metadata/
 
 # C extensions
 **/*.o
