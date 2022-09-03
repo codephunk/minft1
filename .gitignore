@@ -6,6 +6,9 @@
 /assets/images/
 /assets/metadata/
 
+# Configuration
+config.yml
+
 # C extensions
 **/*.o
 **/*.DS_Store
