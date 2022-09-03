@@ -1,4 +1,3 @@
-import json
 import signal
 import traceback
 from pathlib import Path
@@ -18,7 +17,7 @@ from chia.util.ints import uint16
 
 from cfg import cfg
 from db_api import DatabaseApi
-from helpers import get_metadata, get_image_path, sha256sum
+from helpers import get_metadata_path, get_image_path, sha256sum
 
 # Initialize logging
 log = logging.getLogger(__name__)
@@ -31,19 +30,6 @@ class WalletServer:
     wallet_client: WalletRpcClient
     receive_address: str
     database_api: DatabaseApi
-
-    # def get_memos(self, coin_spend: CoinSpend) -> str:
-    #     _, result = coin_spend.puzzle_reveal.run_with_cost(INFINITE_COST, coin_spend.solution)
-    #     for condition in result.as_python():
-    #         if condition[0] == ConditionOpcode.CREATE_COIN and len(condition) >= 3:
-    #             # If only 3 elements (opcode + 2 args), there is no memo, this is ph, amount
-    #             coin_added = Coin(coin_spend.coin.name(), bytes32(condition[1]), int_from_bytes(condition[2]))
-    #             if type(condition[3]) != list:
-    #                 # If it's not a list, it's not the correct format
-    #                 continue
-    #             return condition[3][0].decode()
-    #
-    #     return ""
 
     @staticmethod
     async def create_web_server():
@@ -69,7 +55,7 @@ class WalletServer:
         return self
 
     async def monitor_deposit_task(self):
-        print(f"--- Starting Monitor Deposit Task ---")
+        print("\U0001F916 Starting MinFT1 monitoring loop ==========================================")
         while True:
             address_bytes = decode_puzzle_hash(self.receive_address)
             coin_records: List[
@@ -77,7 +63,7 @@ class WalletServer:
             ] = await self.full_node_rpc.get_coin_records_by_puzzle_hash(
                 address_bytes, False
             )
-            print(f"Number of coins {len(coin_records)}")
+            print(f"\U00002139 Receive address has {len(coin_records)} coin(s).")
 
             for coin_record in coin_records:
 
@@ -96,95 +82,97 @@ class WalletServer:
                 parent_id = parent_coin.coin.name()
                 task = await self.database_api.get_mint_task(parent_id.hex())
                 if task is not None:
-                    print("task for this one already exists")
+                    print(f"\U00002716 Task for mint {task.mint_id} already exists.")
                     continue
 
                 if received_amount < cfg.wallet.price_xch:
-                    print(f"Not enough xch received {received_amount}")
+                    print(f"\U00002716 Not enough XCH received: {received_amount}")
                     continue
 
-                # cs: CoinSpend = await self.full_node_rpc.get_puzzle_and_solution(parent_id, parent_coin.spent_block_index)
-                # memo = self.get_memos(cs)
-                # if len(memo) > 60:
-                #     memo = ""
-
-                print(f"Received amount: {received_amount}")
-                print(f"Parent_id: {parent_id.hex()}")
-                print(f"Mint for: {to_puzzle_hash.hex()}")
+                print(f"\U0001f4B0 Received amount: {received_amount}")
+                print(f"  Parent_id: {parent_id.hex()}")
+                print(f"  Mint for: {to_puzzle_hash.hex()}")
 
                 await self.database_api.create_mint_task(parent_id=parent_id.hex(), to_puzzle_hash=to_address)
-                print("Creating a mint task")
+                print("\U00002705 Creating new mint task")
                 pass
 
             await asyncio.sleep(30)
 
     # mint
     async def mint(self, image_path: str, to_address: str, mint_id: int):
-        filepath = image_path
-        sha = sha256sum(filepath)
+        sha = sha256sum(image_path)
 
         configuration = nft_storage.Configuration(
             host="https://api.nft.storage",
             access_token=cfg.key.nft_storage_api
         )
 
-        cid = None
-        with nft_storage.ApiClient(configuration) as api_client:
-            # Create an instance of the API class
-            api_instance = nft_storage_api.NFTStorageAPI(api_client)
-            body = open(filepath, 'rb')  # file_type |
+        # Store image
 
-            try:
-                # Check if a CID of an NFT is being stored by nft.storage.
-                api_response = api_instance.store(body, _check_return_type=False)
-                cid = api_response["value"]["cid"]
-                print(api_response)
-            except nft_storage.ApiException as e:
-                print("Exception when calling NFTStorageAPI->check: %s\n" % e)
-
-        assert cid is not None
-
-        image_url = f"https://{cid}.ipfs.nftstorage.link/"
-        uris = [image_url]
-        target_address = to_address
-
-        metadata = get_metadata(mint_id)
-        if metadata is False:
-            print("Aborting mint: Could not load JSON metadata file for mint ID %s\n" % mint_id)
-            return
-
-        json_text = json.dumps(metadata, indent=4)
-        json_path = Path(f"image_tasks/{mint_id}.json")
-        json_path.write_text(json_text)
+        image_cid = None
 
         with nft_storage.ApiClient(configuration) as api_client:
             # Create an instance of the API class
             api_instance = nft_storage_api.NFTStorageAPI(api_client)
-            body = open(f"{json_path}", 'rb')  # file_type |
+            body = open(image_path, 'rb')  # file_type |
 
             try:
-                # Check if a CID of an NFT is being stored by nft.storage.
                 api_response = api_instance.store(body, _check_return_type=False)
-                json_cid = api_response["value"]["cid"]
+                image_cid = api_response["value"]["cid"]
                 print(api_response)
             except nft_storage.ApiException as e:
                 print("Exception when calling NFTStorageAPI->check: %s\n" % e)
 
-        assert cid is not None
-        metadata_url = f"https://{json_cid}.ipfs.nftstorage.link/"
-        metadata_sha = sha256sum(f"{json_path}")
-        json_path.unlink()
-        print("Minting!!")
+        assert image_cid is not None
+
+        image_url = f"https://{image_cid}.ipfs.nftstorage.link/"
+        # bafkreigo7vjsqajnkxfpssn7evkiaslaosl75i5lxf7ujyhjhrd34rcmya
+        # Store metadata
+        metadata_cid = None
+        metadata_json_path = get_metadata_path(mint_id)
+
+        with nft_storage.ApiClient(configuration) as api_client:
+            # Create an instance of the API class
+            api_instance = nft_storage_api.NFTStorageAPI(api_client)
+            body = open(metadata_json_path, 'rb')  # file_type |
+
+            try:
+                api_response = api_instance.store(body, _check_return_type=False)
+                metadata_cid = api_response["value"]["cid"]
+                print(api_response)
+            except nft_storage.ApiException as e:
+                print("Exception when calling NFTStorageAPI->check: %s\n" % e)
+
+        assert metadata_cid is not None
+
+        metadata_url = f"https://{metadata_cid}.ipfs.nftstorage.link/"
+        metadata_sha = sha256sum(metadata_json_path)
+
+        # json_path.unlink()
+        print("\U000026A0 Starting minting process!")
+        print({
+            'wallet_id': cfg.wallet.nft_wallet_id,
+            'royalty_address': cfg.wallet.royalties_address,
+            'target_address': to_address,
+            'hash': sha,
+            'uris': [image_url],
+            'fee': cfg.wallet.minting_fees,
+            'meta_hash': metadata_sha,
+            'meta_uris': [metadata_url],
+            'royalty_percentage': cfg.wallet.royalties_percent,
+            'did_id': cfg.wallet.did
+        })
         await self.wallet_client.mint_nft(
             wallet_id=cfg.wallet.nft_wallet_id,
             royalty_address=cfg.wallet.royalties_address,
-            target_address=target_address,
+            target_address=to_address,
             hash=sha,
-            uris=uris,
+            uris=[image_url],
             fee=cfg.wallet.minting_fees,
             meta_hash=metadata_sha,
             meta_uris=[metadata_url],
-            royalty_percentage=cfg.wallet.royalties_percentage,
+            royalty_percentage=cfg.wallet.royalties_percent,
             did_id=cfg.wallet.did
         )
 
@@ -206,10 +194,10 @@ class WalletServer:
             tasks = await self.database_api.get_pending_tasks()
 
             if len(tasks) == 0:
-                print(f"There are {len(tasks)} tasks")
+                # print(f"There are {len(tasks)} tasks")
                 continue
 
-            print(f"There are {len(tasks)} tasks")
+            print(f"\U00002139 {len(tasks)} tasks in queue.")
 
             tasks = await self.database_api.get_pending_tasks()
             task = tasks[0]
@@ -219,11 +207,7 @@ class WalletServer:
             else:
                 image_path = get_image_path(task.mint_id)
 
-            if Path(image_path) is False:
-                continue
-
-
-            print(f"Time to mint {task}")
+            print(f"\U00002705 Time to mint {task}")
             assert Path(image_path).is_file()
             assert len(Path(image_path).read_bytes()) > 10000
 

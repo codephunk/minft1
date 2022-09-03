@@ -1,19 +1,22 @@
 import os.path as op
-from pathlib import Path
 import hashlib
 from cfg import cfg
 
-
-async def get_metadata(mint_id):
-    metadata = Path(op.join("chia", "wallet", cfg.path.metadata, f"{mint_id}.json"))
-    if not metadata.is_file():
-        return False
-
-    return open(f"{metadata}", 'rb')
+zfill_count = len(str(cfg.collection.size - 1))
 
 
-async def get_image_path(mint_id):
-    return op.join("chia", "wallet", cfg.path.images, f"{mint_id}.png")
+def get_full_mint_id(mint_id):
+    return str(mint_id).zfill(zfill_count)
+
+
+def get_metadata_path(mint_id):
+    file_name = f"{get_full_mint_id(mint_id)}.json"
+    return op.join(cfg.path.metadata, file_name)
+
+
+def get_image_path(mint_id):
+    image_name = f"{get_full_mint_id(mint_id)}.png"
+    return op.join(cfg.path.images, image_name)
 
 
 def sha256sum(filename):

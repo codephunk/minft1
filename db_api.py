@@ -47,8 +47,12 @@ class DatabaseApi:
         posts: List[MintTask] = (
             await MintTask.query.order_by(ordering).offset(0).limit(1).gino.all()
         )
-        post = posts[0]
-        return post.mint_id + 1
+        try:
+            mint_id = posts[0].mint_id
+        except IndexError:
+            mint_id = 0
+
+        return mint_id + 1
 
     async def get_mint_task(self, parent_id) -> Optional[MintTask]:
         task = await MintTask.query.where(MintTask.parent_id == parent_id).gino.one_or_none()
