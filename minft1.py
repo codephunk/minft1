@@ -207,7 +207,6 @@ class WalletServer:
             else:
                 image_path = get_image_path(task.mint_id)
 
-            print(f"\U00002705 Time to mint {task}")
             assert Path(image_path).is_file()
             assert len(Path(image_path).read_bytes()) > 10000
 
@@ -215,9 +214,12 @@ class WalletServer:
             new_path.write_bytes(Path(image_path).read_bytes())
 
             new_path_str = f"{new_path.absolute()}"
-            if task.mint_id == 1000 or task.mint_id > 1000:
+            if task.mint_id+1 >= cfg.collection.size:
+                print(f"\U00002139 Minting is disabled. This collection is fully minted.")
                 await asyncio.sleep(30000)
                 continue
+
+            print(f"\U00002705 Time to mint {task}")
 
             await task.update(status=1).apply()
             await self.mint(to_address=task.to_address, mint_id=task.mint_id, image_path=new_path_str)
