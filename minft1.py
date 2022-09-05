@@ -127,7 +127,7 @@ class WalletServer:
         assert image_cid is not None
 
         image_url = f"https://{image_cid}.ipfs.nftstorage.link/"
-        # bafkreigo7vjsqajnkxfpssn7evkiaslaosl75i5lxf7ujyhjhrd34rcmya
+
         # Store metadata
         metadata_cid = None
         metadata_json_path = get_metadata_path(mint_id)
