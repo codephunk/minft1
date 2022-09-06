@@ -1,64 +1,37 @@
 # MINFT1
 ###### A minting toolkit for the Chia Blockchain.
 
+## Requirements
+- The finished artwork of your NFTs
+- The metadata in JSON format for all of your NFTs
+- A fully synced Chia Node / Wallet
+- A Chia NFT wallet and a DID
+- A PostgreSQL server
+
 ## Setup Instructions
 
-### Place the directory `minft1/` in the `chia/wallet/` directory
-### Install additional dependencies 
+#### 1. Clone or copy this repository into the `chia-blockchain` directory.
+#### 2. Change to the new directory and install additional dependencies 
 ```
-pip install git+https://github.com/nftstorage/python-client.git
-pip install gino
-```
-
-### You will need a PostgreSQL databse
-You can run this [PostgreSQL](https://www.postgresql.org/download/) db locally.
-
-### Set ENV variable so that marmot_db_api.py can connect to the database
-
-```
-self.mode = os.getenv("MODE")
-self.host = os.getenv("DB_HOST")
-self.port = int(os.getenv("DB_PORT"))
-self.user = os.getenv("DB_USER")
-self.password = os.getenv("DB_PASS")
-self.database = os.getenv("DB_NAME")
+$ pip install -r requirements.txt
 ```
 
-### Customize collection info
-You will have to create an [NFT.Storage](https://nft.storage/) account and get an api key.
+#### 3. Copy `config.default.yml` to `config.yml` and set all configuration parameters in it.
 
-Edit this section in the `marmot_server.py` file:
+#### 4. Copy all images into the designated images folder and all the JSON metadata into the designated metadata folder. If you're using the default settings these are `assets/images/` and `assets/metadata/`.
 
-```
-RECEIVE_ADDRESS = "xch..."
-ROYALTY_ADDRESS = "xch..."
+#### 5. Make sure you have a fully synced wallet running on the machine you want to use for minting.
 
-XCH_PRICE = 500000000000
-NFT_STORAGE_API_KEY = "NFT_STORAGE_API_KEY"
-DID_ID = ""
-NFT_WALLET_ID = 5
-WEBSITE = "https://"
-BANNER_URL = "https://"
-ICON_URL = "https://"
-TWITTER = "@..."
-COLLECTION_DESCRIPTION = "Mrmrmrm"
-COLLECTION_NAME = "Marmot World Order"
-ROYALTY_PERCENTAGE = 3000
-```
-
-You will have to create an Open AI account, get access to DALL-E, and get authorization token. Put this token in marmot_get.py
-```
-  bearer = "Bearer sess-xxxx"
- ```
-
-### Make sure you have local wallet running and that it is synced
-
-### Run the minter
+#### 6. Run the minter
 ```python
-python chia/wallet/minft1/server.py
+python minft1.py
 ```
 
 ---
+
+#### Adapted by codephunk. Based on the Marmot Minter by Yostra.
+
+#### Original License:
 
 MIT License
 
