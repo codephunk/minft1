@@ -1,18 +1,15 @@
-meta:
-  collection_name: The collection name
-  collection_description: A short description of the collection
-  website: https://...
-  banner_url: https://...
-  icon_url: https://...
-  twitter: @...
+collection:
+  size: 10000
+  license_url: https://...
+  license_hash:
 
 wallet:
   receive_address: xch...
   royalties_address: xch...
   did: did:chia:...
-  nft_wallet_id:
+  nft_wallet_id: 4
   price_xch: 1000000000000
-  royalties_percent: 5000
+  royalties_percent: 500
   minting_fees: 100000
 
 path:
@@ -23,7 +20,7 @@ key:
   nft_storage_api:
 
 db:
-  db_name:
+  database:
   host: localhost
   port: 5432
   user:

@@ -160,6 +160,8 @@ class WalletServer:
             'fee': cfg.wallet.minting_fees,
             'meta_hash': metadata_sha,
             'meta_uris': [metadata_url],
+            'license_hash': cfg.collection.license_hash,
+            'license_uris': [cfg.collection.license_url],
             'royalty_percentage': cfg.wallet.royalties_percent,
             'did_id': cfg.wallet.did
         })
@@ -172,6 +174,8 @@ class WalletServer:
             fee=cfg.wallet.minting_fees,
             meta_hash=metadata_sha,
             meta_uris=[metadata_url],
+            license_hash=cfg.collection.license_hash,
+            license_uris=[cfg.collection.license_url],
             royalty_percentage=cfg.wallet.royalties_percent,
             did_id=cfg.wallet.did
         )

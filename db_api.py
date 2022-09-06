@@ -30,7 +30,7 @@ class DatabaseApi:
         self.port = cfg.db.port
         self.user = cfg.db.user
         self.password = cfg.db.password
-        self.database = cfg.db.db_name
+        self.database = cfg.db.database
 
         self.url = f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
 
