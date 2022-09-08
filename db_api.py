@@ -39,7 +39,7 @@ class DatabaseApi:
 
         await self._database.set_bind(self.url)
 
-        # await self._database.gino.create_all()
+        await self._database.gino.create_all()
         return self
 
     async def get_mint_id(self):
@@ -50,7 +50,7 @@ class DatabaseApi:
         try:
             mint_id = posts[0].mint_id
         except IndexError:
-            mint_id = 0
+            mint_id = -1
 
         return mint_id + 1
 
