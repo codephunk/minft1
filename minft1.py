@@ -82,7 +82,7 @@ class WalletServer:
                 parent_id = parent_coin.coin.name()
                 task = await self.database_api.get_mint_task(parent_id.hex())
                 if task is not None:
-                    print(f"\U00002716 Task for mint {task.mint_id} already exists.")
+                    # print(f"\U00002716 Task for mint {task.mint_id} already exists.")
                     continue
 
                 if received_amount < cfg.wallet.price_xch:
