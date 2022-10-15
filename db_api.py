@@ -38,11 +38,10 @@ class DatabaseApi:
         self._database = db
 
         await self._database.set_bind(self.url)
-
         await self._database.gino.create_all()
         return self
 
-    async def get_mint_id(self):
+    async def get_next_mint_id(self):
         ordering = MintTask.mint_id.desc()
         posts: List[MintTask] = (
             await MintTask.query.order_by(ordering).offset(0).limit(1).gino.all()
@@ -50,7 +49,7 @@ class DatabaseApi:
         try:
             mint_id = posts[0].mint_id
         except IndexError:
-            mint_id = -1
+            mint_id = cfg.collection.start_index - 1
 
         return mint_id + 1
 
@@ -59,7 +58,7 @@ class DatabaseApi:
         return task
 
     async def create_mint_task(self, parent_id: str, to_puzzle_hash: str):
-        mint_id = await self.get_mint_id()
+        mint_id = await self.get_next_mint_id()
         mint = await MintTask.create(
             mint_id=mint_id,
             to_address=to_puzzle_hash,

@@ -1,5 +1,6 @@
 collection:
   size: 10000
+  start_index: 0
   license_url: https://...
   license_hash:
 
