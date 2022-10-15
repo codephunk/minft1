@@ -41,7 +41,8 @@ class DatabaseApi:
         await self._database.gino.create_all()
         return self
 
-    async def get_next_mint_id(self):
+    @staticmethod
+    async def get_next_mint_id():
         ordering = MintTask.mint_id.desc()
         posts: List[MintTask] = (
             await MintTask.query.order_by(ordering).offset(0).limit(1).gino.all()
@@ -53,7 +54,8 @@ class DatabaseApi:
 
         return mint_id + 1
 
-    async def get_mint_task(self, parent_id) -> Optional[MintTask]:
+    @staticmethod
+    async def get_mint_task(parent_id) -> Optional[MintTask]:
         task = await MintTask.query.where(MintTask.parent_id == parent_id).gino.one_or_none()
         return task
 
@@ -69,7 +71,8 @@ class DatabaseApi:
         )
         return mint
 
-    async def get_pending_tasks(self) -> List[MintTask]:
+    @staticmethod
+    async def get_pending_tasks() -> List[MintTask]:
         ordering = MintTask.mint_id.asc()
         tasks = await MintTask.query.order_by(ordering).where(MintTask.status == 0).gino.all()
         return tasks
