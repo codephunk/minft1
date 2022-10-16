@@ -6,7 +6,7 @@
 - The metadata in JSON format for all of your NFTs
 - A fully synced Chia Node / Wallet
 - A Chia NFT wallet and a DID
-- A PostgreSQL server
+- A PostgresSQL server with an empty database. Default database name is 'minft1'.
 
 ## Setup Instructions
 

@@ -50,7 +50,7 @@ class DatabaseApi:
         try:
             mint_id = posts[0].mint_id
         except IndexError:
-            mint_id = cfg.collection.start_index - 1
+            mint_id = cfg.collection.start_index
 
         return mint_id + 1
 

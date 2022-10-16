@@ -41,7 +41,12 @@ class WalletServer:
         wallet_rpc_port = config["wallet"]["rpc_port"]
         fullnode_rpc_port = config["full_node"]["rpc_port"]
 
-        self.wallet_client = await WalletRpcClient.create("127.0.0.1", uint16(wallet_rpc_port), DEFAULT_ROOT_PATH, config)
+        self.wallet_client = await WalletRpcClient.create(
+            "127.0.0.1",
+            uint16(wallet_rpc_port),
+            DEFAULT_ROOT_PATH,
+            config
+        )
         self.receive_address = cfg.wallet.receive_address
         self.full_node_rpc = await FullNodeRpcClient.create(
             self_hostname, fullnode_rpc_port, DEFAULT_ROOT_PATH, config
@@ -180,7 +185,6 @@ class WalletServer:
             did_id=cfg.wallet.did
         )
 
-    # chia wallet nft mint -f 518133150 -i 39 -ra xch16dnl4tzef59ahmum8cm65es8kxslpgacey2prxdwh44ha6dj6lnsazm4ne -ta xch1qnpxe232hr40hl0kgw5n6tqsldyy68tdlc7zfxx88aw3uz026wlsjk9xs2 -mu https://bafkreibnqu7h4dkzuuhyptneo3fhw2trretgfpuscf4dc6uwgnxy556e54.ipfs.nftstorage.link -mh 2d853e7e0d59a50f87cda476ca7b6a71892662be921178317a96336f8ef7c4ef -u https://bafybeicn4prwjotrze6ofzrk3ssat4avqlgjf6wp5rsaudgdysvtzr55ie.ipfs.nftstorage.link -nh 1952b61f21f5cb2b91beaeb01fd53f1baefeed76b1e88beb73ff56a9b93b25fc -lu https://bafkreicvmmvbnri62bde6qkuicrlloauavgehdvtmo5j5t3xhhu5dheije.ipfs.nftstorage.link -lh 55632a16c51ed0464f415440a2b5b814054c438eb363ba9ecf7739e9d19c8849 -rp 500 -m 0.00001
     async def payout_task(self):
         while True:
             await asyncio.sleep(10)
@@ -206,6 +210,10 @@ class WalletServer:
 
             tasks = await self.database_api.get_pending_tasks()
             task = tasks[0]
+            if task.mint_id+1 >= cfg.collection.size:
+                print(f"\U00002139 This collection is fully minted. Minting is disabled. ")
+                await asyncio.sleep(30000)
+                continue
 
             if task.mint_image_url is not None and task.mint_image_url != "":
                 image_path = task.mint_image_url
@@ -219,10 +227,6 @@ class WalletServer:
             # new_path.write_bytes(Path(image_path).read_bytes())
 
             new_path_str = f"{Path(image_path).absolute()}"
-            if task.mint_id+1 >= cfg.collection.size:
-                print(f"\U00002139 This collection is fully minted. Minting is disabled. ")
-                await asyncio.sleep(30000)
-                continue
 
             print(f"\U00002705 Time to mint {task}")
 
