@@ -4,6 +4,9 @@ from typing import Any, List, Optional
 
 from models import db, MintTask
 
+STATUS_NEW = 0
+STATUS_MINTING = 1
+STATUS_DONE = 2
 
 class DatabaseApi:
     max_timestamp: int
@@ -64,7 +67,7 @@ class DatabaseApi:
         mint = await MintTask.create(
             mint_id=mint_id,
             to_address=to_puzzle_hash,
-            status=0,
+            status=STATUS_NEW,
             valid_from=int(time.time()),
             parent_id=parent_id,
             valid_to=self.max_timestamp

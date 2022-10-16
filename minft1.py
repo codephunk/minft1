@@ -16,12 +16,11 @@ from chia.util.default_root import DEFAULT_ROOT_PATH
 from chia.util.ints import uint16
 
 from cfg import cfg
-from db_api import DatabaseApi
+from db_api import DatabaseApi, STATUS_NEW, STATUS_MINTING, STATUS_DONE
 from helpers import get_metadata_path, get_image_path, sha256sum
 
 # Initialize logging
 log = logging.getLogger(__name__)
-
 
 class WalletServer:
     shut_down: bool
@@ -208,30 +207,28 @@ class WalletServer:
 
             print(f"\U00002139 {len(tasks)} tasks in queue.")
 
-            tasks = await self.database_api.get_pending_tasks()
             task = tasks[0]
             if task.mint_id+1 >= cfg.collection.size:
-                print(f"\U00002139 This collection is fully minted. Minting is disabled. ")
-                await asyncio.sleep(30000)
-                continue
+                print("\U00002139 This collection is fully minted. Aborting. ")
+                break
 
-            if task.mint_image_url is not None and task.mint_image_url != "":
-                image_path = task.mint_image_url
-            else:
-                image_path = get_image_path(task.mint_id)
+            image_path = get_image_path(task.mint_id)
 
             assert Path(image_path).is_file()
             assert len(Path(image_path).read_bytes()) > 10000
-
-            # new_path = Path(f"{Path(image_path).parent}/{task.mint_id}.png")
-            # new_path.write_bytes(Path(image_path).read_bytes())
 
             new_path_str = f"{Path(image_path).absolute()}"
 
             print(f"\U00002705 Time to mint {task}")
 
-            await task.update(status=1).apply()
-            await self.mint(to_address=task.to_address, mint_id=task.mint_id, image_path=new_path_str)
+            await task.update(status=STATUS_MINTING).apply()
+            try:
+                await self.mint(to_address=task.to_address, mint_id=task.mint_id, image_path=new_path_str)
+                await task.update(status=STATUS_DONE).apply()
+            except BaseException as err:
+                print(f"MINTING FAILED! Unexpected {err=}, {type(err)=}")
+                print("Resetting task status.")
+                await task.update(status=STATUS_NEW).apply()
 
     def stop_all(self):
         self.shut_down = True

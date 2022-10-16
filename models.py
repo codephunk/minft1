@@ -3,7 +3,7 @@ import logging
 
 db = Gino()
 logging.basicConfig()
-logging.getLogger("gino.engine._SAEngine").setLevel(logging.ERROR)
+logging.getLogger("gino.engine._SAEngine").setLevel(logging.DEBUG)
 
 
 class DBJSON(db.Model):
@@ -15,7 +15,6 @@ class MintTask(db.Model):  # type: ignore # noqa
 
     id = db.Column(db.Integer(), primary_key=True)
     mint_id = db.Column(db.Integer(), nullable=False, unique=True)
-    mint_image_url = db.Column(db.Text(), nullable=True)
     mint_ipfs_url = db.Column(db.Text(), nullable=True)
     to_address = db.Column(db.Text(), nullable=False)
     parent_id = db.Column(db.Text(), nullable=False)
