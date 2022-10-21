@@ -225,6 +225,9 @@ class WalletServer:
             try:
                 await self.mint(to_address=task.to_address, mint_id=task.mint_id, image_path=new_path_str)
                 await task.update(status=STATUS_DONE).apply()
+            except KeyboardInterrupt:
+                await task.update(status=0).apply()
+                raise KeyboardInterrupt
             except BaseException as err:
                 print(f"MINTING FAILED! Unexpected {err=}, {type(err)=}")
                 print("Resetting task status.")

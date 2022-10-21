@@ -3,7 +3,7 @@ import logging
 
 db = Gino()
 logging.basicConfig()
-logging.getLogger("gino.engine._SAEngine").setLevel(logging.DEBUG)
+logging.getLogger("gino.engine._SAEngine").setLevel(logging.ERROR)
 
 
 class DBJSON(db.Model):

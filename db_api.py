@@ -53,7 +53,7 @@ class DatabaseApi:
         try:
             mint_id = posts[0].mint_id
         except IndexError:
-            mint_id = cfg.collection.start_index
+            return cfg.collection.start_index
 
         return mint_id + 1
 
@@ -77,5 +77,5 @@ class DatabaseApi:
     @staticmethod
     async def get_pending_tasks() -> List[MintTask]:
         ordering = MintTask.mint_id.asc()
-        tasks = await MintTask.query.order_by(ordering).where(MintTask.status == 0).gino.all()
+        tasks = await MintTask.query.order_by(ordering).where(MintTask.status == STATUS_NEW).gino.all()
         return tasks
